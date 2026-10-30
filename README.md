@@ -33,7 +33,21 @@
 
 2. 환경 변수 설정
 
+# .env.example 파일을 .env로 복사 후 토큰 입력
+cp .env.example .env
+# 또는 수동으로 .env 파일 생성 후 아래 내용 입력
+.env 파일 내용:
 
+TELEGRAM_BOT_TOKEN=여기에_봇_토큰_입력
+CHECK_INTERVAL=3600
+PRICE_CHECK_INTERVAL=60
+DB_PATH=data/stock_bot.db
+
+# (선택) 토스증권 Open API - 설정 시 데이터 조회가 더 빨라집니다.
+# 미설정/실패 시 기존 Yahoo Finance로 자동 폴백합니다.
+# 발급: 토스증권 WTS > 설정 > Open API > 앱 등록 + 허용 IP 등록 필수
+TOSS_CLIENT_ID=여기에_클라이언트_ID
+TOSS_CLIENT_SECRET=여기에_클라이언트_시크릿
 
 
 
