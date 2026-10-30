@@ -33,6 +33,25 @@
 
 2. 환경 변수 설정
 
+
+
+
+
+3. 실행
+
+```bash
+# 직접 실행 (Python 3.11+)
+python main.py
+
+# 또는 Docker로 실행
+docker build -t stock-alert-bot .
+docker run -d \
+  --name stock-bot \
+  -e TELEGRAM_BOT_TOKEN="여기에_봇_토큰_입력" \
+  -v stock-bot-data:/app/data \
+  stock-alert-bot
+
+
 ```bash
 # .env.example 파일을 .env로 복사 후 토큰 입력
 cp .env.example .env
