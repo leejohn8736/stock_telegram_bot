@@ -109,27 +109,22 @@ volumes:
 
 
 
- 📖 명령어 사용법
+ 
+📖 명령어 사용법
 
 | 명령어 | 설명 | 예시 |
 | :--- | :--- | :--- |
 | `/start` | 환영 메시지 | `/start` |
 | `/help` | 명령어 목록 확인 | `/help` |
-| `/add [티커]` | 관심 주식 등록 | `/add AAPL` , `/add 005930.KS` |
+| `/add [티커]` | 관심 주식 등록 | `/add AAPL`, `/add 005930.KS` |
 | `/del [티커]` | 관심 주식 삭제 | `/del AAPL` |
 | `/list` | 구독 목록 조회 | `/list` |
 | `/predict [티커]` | 기술적 분석 & 예측 리포트 | `/predict TSLA` |
-| `/indices` | 시장 인덱스 현황 조회 | `/indices` , `/지수` , `/시장` |
-| `/korea` | 한국 시장(KOSPI/KOSDAQ)·환율 조회 | `/korea` , `/한국` , `/kr` |
-| `/weekly` | 지난주 주요지수·관심종목 주간 요약 | `/weekly` , `/주간` , `/w` |
-| `/alarms` | 알람 수신 수준 선택 (인라인 버튼) | `/alarms` , `/알람` |
-| `/alerts on\|off` | 자동 알림 켜기/끄기 | `/alerts off` , `/알림 on` |
-
-티커 표기법:
-
-미국 주식: AAPL, TSLA, MSFT
-한국 코스피: 005930.KS (삼성전자), 000660.KS (SK하이닉스)
-한국 코스닥: 247540.KQ (에코프로비엠)
+| `/indices` | 시장 인덱스 현황 조회 | `/indices`, `/지수`, `/시장` |
+| `/korea` | 한국 시장(KOSPI/KOSDAQ)·환율 조회 | `/korea`, `/한국`, `/kr` |
+| `/weekly` | 지난주 주요지수·관심종목 주간 요약 | `/weekly`, `/주간`, `/w` |
+| `/alarms` | 알람 수신 수준 선택 (인라인 버튼) | `/alarms`, `/알람` |
+| `/alerts on\|off` | 자동 알림 켜기/끄기 | `/alerts off`, `/알림 on` |
 
 🛠️ 기술 스택
 항목	내용
