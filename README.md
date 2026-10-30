@@ -70,3 +70,40 @@ docker run -d \
 # .env.example 파일을 .env로 복사 후 토큰 입력
 cp .env.example .env
 # 또는 수동으로 .env 파일 생성 후 아래 내용 입력
+
+
+
+🐳 Docker 배포
+Docker Hub / GitHub Container Registry
+# 이미지 빌드
+docker build -t stock-alert-bot .
+
+# 실행 (데이터 볼륨 마운트)
+docker run -d \
+  --name stock-bot \
+  --restart unless-stopped \
+  -e TELEGRAM_BOT_TOKEN="your_token_here" \
+  -e CHECK_INTERVAL=3600
+PRICE_CHECK_INTERVAL=60 \
+  -v stock-bot-data:/app/data \
+  stock-alert-bot
+
+# 로그 확인
+docker logs -f stock-bot
+docker-compose.yml (선택)
+version: '3.8'
+services:
+  stock-bot:
+    build: .
+    container_name: stock-alert-bot
+    restart: unless-stopped
+    environment:
+      - TELEGRAM_BOT_TOKEN=${TELEGRAM_BOT_TOKEN}
+      - CHECK_INTERVAL=${CHECK_INTERVAL:-3600}
+      - DB_PATH=/app/data/stock_bot.db
+    volumes:
+      - stock-bot-data:/app/data
+
+volumes:
+  stock-bot-data:
+
