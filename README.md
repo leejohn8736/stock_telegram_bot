@@ -139,6 +139,8 @@ API	Telegram Bot API (urllib), Yahoo Finance (현재가·일봉), Nasdaq 과거 
 지표 계산	SMA, 볼린저 밴드, RSI (Wilder Smoothing), 지지/저항
 예측 모델	규칙 기반 휴리스틱 (Rule-based)
 배포	Docker (python:3.11-slim)
+
+
 📂 프로젝트 구조
 stock_bot/
 ├── config.py          # 환경 변수 로드 및 설정
@@ -155,6 +157,8 @@ stock_bot/
 ├── .env.example       # 환경 변수 템플릿
 ├── .gitignore         # Git 제외 파일
 └── README.md          # 프로젝트 설명 (이 파일)
+
+
 🔔 자동 알림 기능
 🎚 알람 수신 수준 설정 (/알람)
 /알람 (또는 /alarms) 명령어를 입력하면 인라인 버튼으로 받을 알람의 수준을 선택할 수 있습니다:
