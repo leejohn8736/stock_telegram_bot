@@ -1,0 +1,12 @@
+{
+  "description": "Exceptional exchange holidays. name=null removes a rule-based closure. Update when exchanges announce changes.",
+  "holidays": [
+    {"market": "KR", "date": "2023-10-02", "name": "임시공휴일"},
+    {"market": "KR", "date": "2024-04-10", "name": "국회의원 선거"},
+    {"market": "KR", "date": "2024-10-01", "name": "국군의 날 임시공휴일"},
+    {"market": "KR", "date": "2025-01-27", "name": "임시공휴일"},
+    {"market": "KR", "date": "2025-06-03", "name": "대통령 선거"},
+    {"market": "KR", "date": "2026-06-03", "name": "전국동시지방선거"},
+    {"market": "US", "date": "2025-01-09", "name": "카터 전 대통령 국가 애도일"}
+  ]
+}
