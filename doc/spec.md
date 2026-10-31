@@ -51,6 +51,17 @@ main.py
 └─ 5) 메인 스레드 대기 + Ctrl+C 시 graceful shutdown
 
 
+### 2.3 데이터 흐름 (알람 1건 기준)
 
-### 2.3 데이터 흐름 (알림 1건 기준)
-
+```text
+[CHECK_INTERVAL 도래]
+      ▼
+scheduler._check_all_subscribed_stocks()
+      ▼  (티커별 / 휴장일이면 스킵)
+stock_api.fetch_stock_data(ticker)       # 현재가 + 일봉 OHLCV (프리/애프터 포함)
+      ▼
+_check_stock_high_breakouts()             # 역대/52주 신고가 돌파 체크
+      ▼
+_process_ticker_alerts()
+      ├─ _check_price_change_alerts()     # 전일 종가 기준 변동 %
+      └─ 기술적 이벤트 5종 (볼린저·SMA20/60/120·RSI)
