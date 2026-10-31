@@ -13,3 +13,20 @@
 * 미국 주식 정규장 조기폐장: 미국 동부 13시 및 한국 시간 병기
 
 날짜는 각 거래소 현지 거래일 기준입니다. 미국의 분기 동시만기는 현재 트리플 위칭으로 표기하며 통칭 ‘네 마녀의 날’을 함께 표시합니다. 상품별 결제·최종거래 시점, 주간·일일 옵션 만기는 포함하지 않습니다.
+
+
+### 데이터 및 갱신
+
+외부 패키지나 API 키 없이 `market_events.py` 에서 거래소 정기 규칙과 기존 음력 달력을 조합합니다. 실시간 웹 수집 방식은 아닙니다. 한국 음력 데이터 지원 범위는 현재 2023~2029년이며, 지원하지 않는 연도에는 한국 일정을 누락 사실과 함께 안내하고 미국 일정은 계속 표시합니다. 향후 연도와 법정 공휴일 변경은 달력을 갱신해야 합니다.
+
+선거일·국가 애요일·임시휴장 등은 `market_calendar_overrides.json`에 등록합니다. 실행할 때마다 읽으므로 재시작 없이 반영됩니다. `market` 은 `KR` 또는 `US`, `date` 는 `YYYY-MM-DD`, `name` 은 사유입니다. `name: null` 은 해당 날짜의 기본 휴장을 제거합니다. 새 임시휴장 공지는 운영자가 확인해 반영해야 합니다. FOMC·경제지표·기업 실적 발표 일정은 현재 범위에 포함하지 않습니다.
+
+확인 출처:
+
+* [KRX 휴장 안내](https://marketdata.krx.co.kr/)
+* [KRX 거래일 규정](https://marketdata.krx.co.kr/)
+* [KRX KOSPI 200 선물 만기 규칙](https://marketdata.krx.co.kr/)
+* [NYSE 휴장·조기폐장](https://www.nyse.com/markets/hours-calendars)
+* [Cboe 옵션 일정](https://www.cboe.com/aboutcboe/calendar/)
+
+검증: `python -m unittest discover -s tests -v` (임시 DB와 가짜 봇을 사용하며 실제 메시지를 전송하지 않음).
