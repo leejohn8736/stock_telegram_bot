@@ -77,3 +77,58 @@
 4. `e81b822` 매수, 매도 알림 추가, 하루 최대알림 제한 추가 (미푸시)
    - STRONG BUY/SELL 권장 알림 + `recommendation_alerts` 테이블 일일 제한
    - `tests/test_recommendation_alerts.py` 추가
+
+
+## 4. 백테스트 진행 현황
+
+| 단계 | 내용 | 산출물 |
+| :--- | :--- | :--- |
+| 1차 | 예측 로직 개선 전, 12개 미국 대형주 (5년/horizon 5) | `results/*_backtest.json` |
+| 2차 | 예측 로직 대규모 개선 후 동일 조건 재측정 | `results_v2/*_backtest.json` |
+| STRONG 전략 | STRONG BUY/SELL "무조건 액션" 12종(한국 포함) 검증 | `results/strong_alert_backtest_results.json` |
+| 비교 분석 | `python results/compare_analysis.py` → 개선 전/후 diff | `results/compare_analysis.py` |
+| 종합 분석 | `python results/summary_analysis.py` → 12종 평균 | `results/summary_analysis.py` |
+
+💡 코드 구조의 핵심 장점: 백테스트(`backtest.py`)가 실운영 로직(`predictor.predict_buy_sell_prices`)을 그대로 호출 → 로직 개선 후 백테스트만 다시 돌리면 즉시 회귀 검증 가능. 개선 전/후 비교 스크립트가 준비되어 있어 수치 근거로 의사결정하는 워크플로가 잡히 있음.
+
+
+## 5. 테스트 현황
+
+`python -m unittest discover -s tests -v`
+→ Ran 40 tests, FAILED (errors=1)
+
+🟢 통과 (39개):
+- `test_alert_settings` : 자동 알림 on/off
+- `test_backtest` : 데이터 수집, 백테스트 실행, Look-ahead 방지, 파라미터 반영
+- `test_korea_market_close` : 한국 휴장일 판별, 마감 리포트 포맷(부분 데이터 포함)
+- `test_recommendation_alerts` : STRONG 알림 전송/전송안함/일일 제한
+- `test_scheduler_trading_day` : 휴장일 스캔 스킵, 티커별 거래일 판별
+
+⚠️ 실패 1건 (환경 이슈, 로직 버グ 아님):
+- `test_index_high_breakouts_skipped_on_weekend`
+원인: Windows 콘솔 CP949 인코딩이 이모지(🟩) 출력 불가
+→ `UnicodeEncodeError: 'cp949' codec can't encode character '\U0001f4c5'`
+해결 후보: `PYTHONIOENCODING=utf-8` 환경변수, 또는 print 아스키 대체
+
+참고: `main.py` 실행에는 영향 없음 (텔레그램 메시지는 UTF-8 전송). 테스트 출력이 터미널에 이모지로 찍히는 print 문들에서만 발생합니다.
+
+
+## 6. 알려진 이슈 / 리스크
+
+| # | 이슈 | 영향 | 해결 방안 |
+| :--- | :--- | :--- | :--- |
+| 1 | Windows CP949 콘솔에서 이모지 print 오류 | 테스트 1건 실패 | 테스트/로깅 출력 시 아스키 대체 또는 `PYTHONIOENCODING=utf-8` |
+| 2 | 한국 음력 공휴일 수동 명시 (2024~2029) | 2030년부터 기능 저하 | 날짜 계산 라이브러리/알고리즘화 |
+| 3 | `datetime.utcnow()` DeprecationWarning | Python 3.12+에서 경고 | `datetime.now(datetime.UTC)` 로 교체 |
+| 4 | scheduler의 "오늘 보냄" 상태 일부 메모리 상주 | 재시작 시 중복 알림 가능 | DB 영속화 (부분 적용됨: 주간/신고가/권장 알림은 DB 기록) |
+| 5 | SSL 검증 비활성장(`CERT_NONE`) | 보안상 위험 | 운영 환경에서 검증 활성화 옵션 제공 |
+| 6 | `backtest_strong_alerts.py` 미커밋 | git untracked | 커밋/푸시 필요 |
+
+## 7. 다음 작업 제안 (우선순위)
+
+- [ ] P0 `backtest_strong_alerts.py` 포함 전체 커밋 push (`main` 이 origin보다 3커밋 앞섬)
+- [ ] P0 `test_scheduler_trading_day.py` 이모지 인코딩 이슈 수정 → 40/40 테스트 그린
+- [ ] P1 음력 공휴일 자동 계산 로직 도입
+- [ ] P1 `datetime.utcnow()` Deprecation 제거
+- [ ] P2 스케줄러 전송 상태 DB 영속화 완료 (미국/한국 마감, 극단조건)
+- [ ] P2 백테스트 결과의 예측 정확도/수익률을 README·progress에 수치 정리
