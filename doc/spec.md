@@ -244,8 +244,18 @@ _process_ticker_alerts()
       ▼ (중복 방지: last_signals / 일일 제한: recommendation_alerts 테이블)
 telegram_bot.send_message(chat_id, ...)   # chat_topics 토픽 설정 반영
 
+## 3. 데이터 모델 (SQLite 스키마)
 
+| 테이블 | PK | 용도 |
+| :--- | :--- | :--- |
+| `subscriptions` | `(chat_id, ticker)` | 구독자-종목 매핑, ticker는 대문자 저장 |
+| `last_signals` | `(chat_id, ticker, signal_type)` | 기술적 시그널 중복 전송 방지 (발생→해제 시 삭제) |
+| `last_prices` | `(chat_id, ticker)` | 마지막 가격/마지막 알림가/변동 임계값(%) 관리 |
+| `daily_price_alerts` | `(chat_id, ticker, alert_date, threshold_pct, direction)` | 전일 종가 기준 5/10/20% 변동 알림 (1일 1회) |
+| `high_breakout_alerts` | `(chat_id, ticker, alert_type, alert_date)` | 역대/52주 신고가 알림 (1일 1회) |
+| `weekly_report_sends` | `(chat_id, week_start)` | 주간 리포트 1주 1회 전송 기록 |
+| `chat_topics` | `(chat_id)` | 단체방 알림 토픽(`message_thread_id`) 저장 |
+| `chat_alert_settings` | `(chat_id)` | 자동 알림 on/off (기본 1=ON) |
+| `recommendation_alerts` | `(chat_id, ticker, alert_date, alert_type)` | STRONG BUY/SELL 권장 알림 (일일 최대 3회) |
 
-
-
-
+> ⚠️ `daily_price_alerts` 는 구버전 PK 구조 → 새 PK 구조로 자동 마이그레이션 코드 포함.
