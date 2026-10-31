@@ -222,3 +222,24 @@ _process_ticker_alerts()
 - [ ] 외부 패키지 도입 옵션 (yfinance, python-telegram-bot 등) — 표준 라이브러리 전략과 상충 시 명시적 선택
 - [ ] 프리마켓/애프터마켓 가격과 이전 봉 참조 정합성 개선
 - [ ] Docker Compose / systemd 구성 문서화
+
+|--------|------|------|
+| `/start` | - | 환영 메시지 |
+| `/help` | - | 도움말 |
+| `/add [티커]` | - | 종목 구독 (예: AAPL, 005930.KS) |
+| `/del [티커]` | - | 구독 해제 |
+| `/list` | - | 구독 목록 + 현재가 + 추천 등급 |
+| `/predict [티커]` | `/예측`, `/p` | 일봉 기반 분석 리포트 |
+| `/predict_short` | `/단기예측`, `/ps` | 5분봉 기반 단기 예측 |
+| `/predict_weekly` | `/장기예측`, `/pw` | 주봉 기반 장기 예측 |
+| `/settopic` | `/토픽설정`, `/topic` | 단체방 알림 토픽 설정 |
+| `/indices` | `/지수`, `/시장`, `/i` | 시장 지수 현황 |
+| `/korea` | `/한국`, `/kr` | KOSPI·KOSDAQ·환율 |
+| `/alerts` | `/알림`, `/alert` | 자동 알림 on/off 설정/조회 |
+| `/weekly` | `/주간`, `/주간리포트`, `/w` | 주간 요약 리포트 |
+
+> 단체방에서 봇 이름이 붙은 `/korea@봇이름` 형식도 자동완성 접미사를 제거해 인식합니다.
+      └─ _check_recommendation_alerts()   # STRONG BUY/SELL → 권장가 알림
+      ▼ (중복 방지: last_signals / 일일 제한: recommendation_alerts 테이블)
+telegram_bot.send_message(chat_id, ...)   # chat_topics 토픽 설정 반영
+
