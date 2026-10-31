@@ -21,3 +21,6 @@
 | `.env.example`, `.gitignore` | 설정 예시와 Git 제외 파일 |
 | `README.md` | 설치, 실행 및 기능 안내 |
 | `doc/spec.md`, `doc/progress.md` | 정리 이전 설계·진행 이력 |
+
+data/는 운영 DB 저장 디렉터리이며 Git과 Docker 빌드에서 제외합니다. 테스트 파일 8개와 백테스트 실행 도구 2개는 요청에 따라 삭제했습니다.
+
