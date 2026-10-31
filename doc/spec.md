@@ -245,7 +245,7 @@ _process_ticker_alerts()
 telegram_bot.send_message(chat_id, ...)   # chat_topics 토픽 설정 반영
 
 ---
-## 3. 데이터 모델 (SQLite 스키마)
+ ## 3. 데이터 모델 (SQLite 스키마)
 
 | 테이블 | PK | 용도 |
 | :--- | :--- | :--- |
@@ -260,4 +260,3 @@ telegram_bot.send_message(chat_id, ...)   # chat_topics 토픽 설정 반영
 | `recommendation_alerts` | `(chat_id, ticker, alert_date, alert_type)` | STRONG BUY/SELL 권장 알림 (일일 최대 3회) |
 
 > ⚠️ `daily_price_alerts` 는 구버전 PK 구조 → 새 PK 구조로 자동 마이그레이션 코드 포함.
-```[cite: 16]
