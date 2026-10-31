@@ -49,3 +49,8 @@ main.py
 ├─ 3) TelegramBot()         → set_my_commands() + start_polling() (Long Polling 스레드)
 ├─ 4) AlertScheduler(bot)   → start() (백그라운드 스캔 스레드)
 └─ 5) 메인 스레드 대기 + Ctrl+C 시 graceful shutdown
+
+
+
+### 2.3 데이터 흐름 (알림 1건 기준)
+
