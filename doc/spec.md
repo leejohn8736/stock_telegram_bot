@@ -65,6 +65,7 @@ _check_stock_high_breakouts()             # 역대/52주 신고가 돌파 체크
 _process_ticker_alerts()
       ├─ _check_price_change_alerts()     # 전일 종가 기준 변동 %
       └─ 기술적 이벤트 5종 (볼린저·SMA20/60/120·RSI)
+---
 
 ## 4. 예측 알고리즘 (predictor.py)
 
