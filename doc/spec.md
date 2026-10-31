@@ -244,6 +244,10 @@ _process_ticker_alerts()
       ▼ (중복 방지: last_signals / 일일 제한: recommendation_alerts 테이블)
 telegram_bot.send_message(chat_id, ...)   # chat_topics 토픽 설정 반영
 
+
+
+
+
 ## 3. 데이터 모델 (SQLite 스키마)
 
 | 테이블 | PK | 용도 |
