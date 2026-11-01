@@ -1,5 +1,6 @@
 import time
 import sys
+import os
 import database
 from config import TELEGRAM_BOT_TOKEN, DB_PATH, CHECK_INTERVAL
 from telegram_bot import TelegramBot
@@ -66,7 +67,19 @@ def main():
     print("Press CTRL+C to terminate services gracefully.")
     print("="*50 + "\n")
     
-    # Main loop with graceful shutdown
+    # 💡 GitHub Actions 환경(CI=true)인지 확인하여 자동 종료 처리
+    is_github_actions = os.environ.get("CI") == "true"
+
+    if is_github_actions:
+        print("🤖 GitHub Actions 환경 감지: 스캔 및 알림 전송 후 안전하게 종료합니다.")
+        time.sleep(3.0)  # 초기 스캔 및 메시지 발송 대기 시간
+        scheduler.stop()
+        bot.stop_polling()
+        time.sleep(1.5)
+        print("👋 GitHub Actions에서 서비스가 성공적으로 종료되었습니다.")
+        sys.exit(0)
+
+    # 로컬 PC에서 실행할 때만 24시간 대기 유지
     try:
         while True:
             time.sleep(1)
