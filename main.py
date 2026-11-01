@@ -67,12 +67,16 @@ def main():
     print("Press CTRL+C to terminate services gracefully.")
     print("="*50 + "\n")
     
-    # 💡 GitHub Actions 환경(CI=true)인지 확인하여 자동 종료 처리
+    # 💡 GitHub Actions 환경(CI=true)인지 확인
     is_github_actions = os.environ.get("CI") == "true"
 
     if is_github_actions:
-        print("🤖 GitHub Actions 환경 감지: 스캔 및 알림 전송 후 안전하게 종료합니다.")
-        time.sleep(3.0)  # 초기 스캔 및 메시지 발송 대기 시간
+        print("🤖 GitHub Actions 환경 감지: 시장 분석 및 텔레그램 알림 전송을 수행합니다.")
+        # 텔레그램 메시지가 완전히 수집되고 전송될 수 있도록 충분한 대기 시간 부여
+        print("⏳ 주식 데이터 수집 및 텔레그램 알림 전송 대기 중 (40초)...")
+        time.sleep(40.0) 
+        
+        print("🛑 작업 완료 후 안전하게 종료합니다.")
         scheduler.stop()
         bot.stop_polling()
         time.sleep(1.5)
