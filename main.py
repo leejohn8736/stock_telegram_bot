@@ -2,6 +2,7 @@ import time
 import sys
 import os
 import threading
+import requests  # 셀프 핑 요청을 위해 추가
 from http.server import HTTPServer, BaseHTTPRequestHandler
 import database
 from config import TELEGRAM_BOT_TOKEN, DB_PATH, CHECK_INTERVAL
@@ -26,6 +27,30 @@ def run_web_server():
     port = int(os.environ.get("PORT", 10000))
     server = HTTPServer(("0.0.0.0", port), SimpleHandler)
     server.serve_forever()
+
+# -------------------------------------------------------------
+# 🔄 Render 절전 모드 방지용 셀프 핑(Self-Ping) 백그라운드 함수
+# -------------------------------------------------------------
+def self_ping_loop():
+    # Render 대시보드의 서비스 URL (예: https://stock-telegram-bot-35i4.onrender.com)
+    # 환경 변수에 RENDER_EXTERNAL_URL이 자동으로 설정되거나, 직접 설정한 값이 있다면 가져옵니다.
+    app_url = os.environ.get("RENDER_EXTERNAL_URL")
+    
+    if not app_url:
+        print("ℹ️ [Self-Ping] RENDER_EXTERNAL_URL이 감지되지 않았습니다. 기본 도메인으로 시도합니다.")
+        # 만약 환경 변수가 없다면 본인의 실제 Render URL을 직접 적어주셔도 됩니다.
+        app_url = "https://stock-telegram-bot-35i4.onrender.com"
+        
+    print(f"🔄 [Self-Ping] Self-ping service started. Target URL: {app_url}")
+    
+    # 10분(600초)마다 한 번씩 자기 자신을 호출
+    while True:
+        try:
+            time.sleep(600)
+            response = requests.get(app_url, timeout=10)
+            print(f"ping... self-ping sent (Status: {response.status_code})")
+        except Exception as e:
+            print(f"⚠️ [Self-Ping] Error during self-ping: {e}")
 
 # -------------------------------------------------------------
 # 🚀 봇 메인 로직
@@ -87,8 +112,11 @@ def main():
     print("Press CTRL+C to terminate services gracefully.")
     print("="*50 + "\n")
     
-    # Render 포트 검사를 통과하기 위해 백그라운드 웹 서버 스레드 구동
+    # 1. Render 포트 검사를 통과하기 위해 백그라운드 웹 서버 스레드 구동
     threading.Thread(target=run_web_server, daemon=True).start()
+    
+    # 2. Render 슬립 방지를 위한 셀프 핑 백그라운드 스레드 구동
+    threading.Thread(target=self_ping_loop, daemon=True).start()
 
     # Main loop with graceful shutdown (24/7 상시 구동 무한 루프)
     try:
