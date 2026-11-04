@@ -1,11 +1,35 @@
 import time
 import sys
+import os
+import threading
+from http.server import HTTPServer, BaseHTTPRequestHandler
 import database
 from config import TELEGRAM_BOT_TOKEN, DB_PATH, CHECK_INTERVAL
 from telegram_bot import TelegramBot
 from scheduler import AlertScheduler
 import toss_api
 
+# -------------------------------------------------------------
+# 🌐 Render 웹 서비스 포트 타임아웃 방지용 가벼운 웹 서버 (백그라운드 실행)
+# -------------------------------------------------------------
+class SimpleHandler(BaseHTTPRequestHandler):
+    def do_GET(self):
+        self.send_response(200)
+        self.end_headers()
+        self.wfile.write(b"Telegram Stock Alert Bot is running!")
+    
+    def log_message(self, format, *args):
+        # 불필요한 HTTP 접속 로그가 터미널을 도배하지 않도록 차단
+        return
+
+def run_web_server():
+    port = int(os.environ.get("PORT", 10000))
+    server = HTTPServer(("0.0.0.0", port), SimpleHandler)
+    server.serve_forever()
+
+# -------------------------------------------------------------
+# 🚀 봇 메인 로직
+# -------------------------------------------------------------
 def check_environment():
     """Validates essential configuration before launching."""
     if not TELEGRAM_BOT_TOKEN:
@@ -13,9 +37,7 @@ def check_environment():
         print("❌ ERROR: TELEGRAM_BOT_TOKEN IS NOT CONFIGURED!")
         print("="*60)
         print("텔레그램 봇 토큰이 설정되지 않았습니다.")
-        print("동일한 폴더에 '.env' 파일을 생성하고 아래와 같이 토큰을 입력해 주세요:")
-        print("\nTELEGRAM_BOT_TOKEN=123456789:ABCdefGhIJKlmNoPQRsTUVwxyZ")
-        print(f"CHECK_INTERVAL={CHECK_INTERVAL}")
+        print("Render 환경 변수(Environment Variables)에 TELEGRAM_BOT_TOKEN을 등록해 주세요.")
         print("="*60 + "\n")
         return False
     return True
@@ -39,7 +61,6 @@ def main():
             print("   - 기존 Yahoo Finance 방식으로 동작합니다.")
     else:
         print("ℹ️  Data Source: Yahoo Finance 사용")
-        print("   - 더 빠른 조회를 원하면 .env에 TOSS_CLIENT_ID / TOSS_CLIENT_SECRET을 설정하세요.")
         
     # Initialize components
     print(f"📂 Initializing database at '{DB_PATH}'...")
@@ -66,7 +87,10 @@ def main():
     print("Press CTRL+C to terminate services gracefully.")
     print("="*50 + "\n")
     
-    # Main loop with graceful shutdown
+    # Render 포트 검사를 통과하기 위해 백그라운드 웹 서버 스레드 구동
+    threading.Thread(target=run_web_server, daemon=True).start()
+
+    # Main loop with graceful shutdown (24/7 상시 구동 무한 루프)
     try:
         while True:
             time.sleep(1)
