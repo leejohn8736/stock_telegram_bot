@@ -229,6 +229,6 @@ Yahoo Finance 당일 1분봉 고가·저가(프리·애프터장 포함)를 전�
 적용하려면 봇을 재시작하세요. 데이터베이스 구조 변경은 없습니다. 기존 KST 날짜로 저장된 미국장 알림 이력은 배포 당일 중복될 수 있습니다.
 
 
-원본  출처 : fbqweasd/stock_telegram_bot
+원본의  출처 : fbqweasd/stock_telegram_bot 
 
  
