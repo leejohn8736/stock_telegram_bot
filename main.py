@@ -72,12 +72,15 @@ def main():
     else:
         print("ℹ️ Data Source: Yahoo Finance 사용")
         
-    # 데이터베이스 초기화
+    # 데이터베이스 초기화 (인코딩 에러 방지 안전장치 추가)
     print(f"📂 Initializing database at '{DB_PATH}'...")
-    database.init_db()
-    print("✅ Database initialized successfully.")
+    try:
+        database.init_db()
+        print("✅ Database initialized successfully.")
+    except Exception as e:
+        print(f"⚠️ Database initialization warning (continuing): {e}")
     
-    # 텔레그램 봇 폴링 시작 (안전한 기존 방식)
+    # 텔레그램 봇 폴링 시작 (에러 발생해도 꺼지지 않게 안전 처리)
     print("🤖 Starting Telegram Polling Service...")
     bot = TelegramBot()
     try:
