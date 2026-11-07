@@ -10,44 +10,21 @@ from telegram_bot import TelegramBot
 from scheduler import AlertScheduler
 import toss_api
 
-# 글로벌 봇 인스턴스 (웹훅 핸들러에서 메시지 처리를 위해 필요)
-bot_instance = None
-
 # -------------------------------------------------------------
-# 🌐 Render 웹 서비스 포트 바인딩 및 텔레그램 웹훅(Webhook) 수신 서버
+# 🌐 Render 웹 서비스 포트 타임아웃 방지용 가벼운 웹 서버
 # -------------------------------------------------------------
-class WebhookHandler(BaseHTTPRequestHandler):
-    def do_POST(self):
-        """텔레그램 서버가 보내주는 메시지 이벤트를 수신하는 엔드포인트"""
-        try:
-            content_length = int(self.headers.get('Content-Length', 0))
-            post_data = self.rfile.read(content_length)
-            
-            if bot_instance:
-                # 텔레그램 업데이트 데이터를 봇 객체로 전달하여 처리
-                bot_instance.process_webhook_data(post_data)
-                
-            self.send_response(200)
-            self.end_headers()
-            self.wfile.write(b"OK")
-        except Exception as e:
-            print(f"⚠️ [Webhook Error] {e}")
-            self.send_response(500)
-            self.end_headers()
-
+class SimpleHandler(BaseHTTPRequestHandler):
     def do_GET(self):
-        """Render 헬스체크 및 자체 셀프 핑 응답용"""
         self.send_response(200)
         self.end_headers()
-        self.wfile.write(b"Telegram Stock Alert Bot is running via Webhook!")
-    
+        self.wfile.write(b"Telegram Stock Alert Bot is running!")
+     
     def log_message(self, format, *args):
-        # 불필요한 접속 로그 도배 방지
         return
 
 def run_web_server():
     port = int(os.environ.get("PORT", 10000))
-    server = HTTPServer(("0.0.0.0", port), WebhookHandler)
+    server = HTTPServer(("0.0.0.0", port), SimpleHandler)
     server.serve_forever()
 
 # -------------------------------------------------------------
@@ -62,7 +39,7 @@ def self_ping_loop():
     
     while True:
         try:
-            time.sleep(600)  # 10분마다 핑
+            time.sleep(600)
             response = requests.get(app_url, timeout=10)
             print(f"ping... self-ping sent (Status: {response.status_code})")
         except Exception as e:
@@ -80,8 +57,7 @@ def check_environment():
     return True
 
 def main():
-    global bot_instance
-    print("🚀 Initializing Telegram Stock Alert Bot (Webhook Mode)...")
+    print("🚀 Initializing Telegram Stock Alert Bot...")
     
     if not check_environment():
         sys.exit(1)
@@ -101,29 +77,27 @@ def main():
     database.init_db()
     print("✅ Database initialized successfully.")
     
-    # 텔레그램 봇 설정 및 웹훅 등록
-    print("🤖 Starting Telegram Webhook Service...")
-    bot_instance = TelegramBot()
-    bot_instance.set_my_commands()
+    # 텔레그램 봇 폴링 시작 (안전한 기존 방식)
+    print("🤖 Starting Telegram Polling Service...")
+    bot = TelegramBot()
+    try:
+        bot.set_my_commands()
+    except Exception as e:
+        print(f"⚠️ Warning during set_my_commands (ignoring): {e}")
+        
+    bot.start_polling()
     
-    # Render 외부 URL에 웹훅 등록
-    render_url = os.environ.get("RENDER_EXTERNAL_URL", "https://stock-telegram-bot-35i4.onrender.com")
-    webhook_url = f"{render_url}/{TELEGRAM_BOT_TOKEN}"
-    bot_instance.set_webhook(webhook_url)
-    print(f"🔗 Webhook registered to: {webhook_url}")
-    
-    # 백그라운드 스케줄러 시작
     print("⏰ Starting Technical Indicator Background Scan Service...")
-    scheduler = AlertScheduler(bot_instance)
+    scheduler = AlertScheduler(bot)
     scheduler.start()
     
     print("\n" + "="*50)
-    print("🎉 STOCK ALERT BOT IS NOW RUNNING VIA WEBHOOK!")
+    print("🎉 STOCK ALERT BOT IS NOW RUNNING SUCCESSFULLY!")
     print(f"- SQLite DB: {DB_PATH}")
     print(f"- Scan Interval: {CHECK_INTERVAL} seconds")
     print("="*50 + "\n")
     
-    # 1. 웹 서버(웹훅 수신 + 포트 바인딩 + 헬스체크) 스레드 구동
+    # 1. Render 포트 바인딩용 웹 서버 스레드 구동
     threading.Thread(target=run_web_server, daemon=True).start()
     
     # 2. 슬립 방지 셀프 핑 스레드 구동
@@ -136,7 +110,7 @@ def main():
     except (KeyboardInterrupt, SystemExit):
         print("\n⚠️ Termination signal received. Shutting down...")
         scheduler.stop()
-        bot_instance.remove_webhook()
+        bot.stop_polling()
         sys.exit(0)
 
 if __name__ == "__main__":
