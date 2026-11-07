@@ -30,7 +30,11 @@ CHECK_INTERVAL = int(os.environ.get("CHECK_INTERVAL", 3600))  # Default: 1 hour
 PRICE_CHECK_INTERVAL = max(10, int(os.environ.get("PRICE_CHECK_INTERVAL", 60)))
 DB_PATH = os.environ.get("DB_PATH", "data/stock_bot.db")
 
-# Ensure data directory exists
+# JSONbin.io Cloud Storage Configs (추가됨)
+JSONBIN_API_KEY = os.environ.get("JSONBIN_API_KEY", "")
+JSONBIN_BIN_ID = os.environ.get("JSONBIN_BIN_ID", "")
+
+# Ensure data directory exists (로컬 백업용 또는 기타 파일용)
 db_dir = os.path.dirname(DB_PATH)
 if db_dir and not os.path.exists(db_dir):
     os.makedirs(db_dir, exist_ok=True)
