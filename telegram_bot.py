@@ -45,7 +45,7 @@ class TelegramBot:
         self.ssl_context.verify_mode = ssl.CERT_NONE
         
     def _api_call(self, method, data=None):
-        """Make HTTP request to Telegram Bot API with explicit UTF-8 encoding."""
+        """Make HTTP request to Telegram Bot API with strict UTF-8 byte encoding preventing ASCII codec crashes."""
         if not self.token:
             print("Telegram Bot Token is not configured. API call skipped.")
             return None
@@ -53,22 +53,22 @@ class TelegramBot:
         url = f"{self.base_url}/{method}"
         headers = {"Content-Type": "application/json; charset=utf-8"}
         
-        req_data = None
-        if data:
-            # ensure_ascii=False를 통해 한글 및 유니코드가 깨지지 않고 안전하게 전송되도록 함
-            req_data = json.dumps(data, ensure_ascii=False).encode("utf-8")
-        else:
-            # data가 없는 GET 요청(getUpdates 등)에서도 아스키 인코딩 오류가 나지 않도록 빈 JSON 바이트 전달
-            req_data = json.dumps({}, ensure_ascii=False).encode("utf-8")
-            
-        req = urllib.request.Request(url, data=req_data, headers=headers, method="POST")
-        
         try:
+            # 아스키 인코딩 에러(ascii codec can't encode)를 원천 차단하기 위해 utf-8 바이트로 직접 변환
+            if data is not None:
+                json_str = json.dumps(data, ensure_ascii=False)
+                req_data = json_str.encode("utf-8")
+            else:
+                req_data = json.dumps({}, ensure_ascii=False).encode("utf-8")
+                
+            req = urllib.request.Request(url, data=req_data, headers=headers, method="POST")
+            
             with urllib.request.urlopen(req, context=self.ssl_context, timeout=25) as response:
                 if response.status == 200:
-                    return json.loads(response.read().decode("utf-8"))
+                    response_bytes = response.read()
+                    return json.loads(response_bytes.decode("utf-8"))
                 else:
-                    print(f"Telegram API Error on {method}: HTTP Error {response.status}: {response.read().decode('utf-8')}")
+                    print(f"Telegram API Error on {method}: HTTP Error {response.status}")
         except urllib.error.HTTPError as e:
             err_body = e.file.read().decode('utf-8', errors='ignore') if e.file else ""
             print(f"Telegram API Error on {method}: HTTP Error {e.code}: {e.reason} - {err_body}")
