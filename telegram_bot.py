@@ -45,7 +45,7 @@ class TelegramBot:
         self.ssl_context.verify_mode = ssl.CERT_NONE
         
     def _api_call(self, method, data=None):
-        """Make HTTP request to Telegram Bot API."""
+        """Make HTTP request to Telegram Bot API with explicit UTF-8 encoding."""
         if not self.token:
             print("Telegram Bot Token is not configured. API call skipped.")
             return None
@@ -55,10 +55,13 @@ class TelegramBot:
         
         req_data = None
         if data:
-            # ensure_ascii=False를 통해 한글 및 유니코드가 깨지지 않고 안전하게 전송되도록 합니다.
+            # ensure_ascii=False를 통해 한글 및 유니코드가 깨지지 않고 안전하게 전송되도록 함
             req_data = json.dumps(data, ensure_ascii=False).encode("utf-8")
+        else:
+            # data가 없는 GET 요청(getUpdates 등)에서도 아스키 인코딩 오류가 나지 않도록 빈 JSON 바이트 전달
+            req_data = json.dumps({}, ensure_ascii=False).encode("utf-8")
             
-        req = urllib.request.Request(url, data=req_data, headers=headers, method="POST" if data else "GET")
+        req = urllib.request.Request(url, data=req_data, headers=headers, method="POST")
         
         try:
             with urllib.request.urlopen(req, context=self.ssl_context, timeout=25) as response:
@@ -159,8 +162,6 @@ class TelegramBot:
     def set_my_commands(self):
         """
         setMyCommands API를 호출하여 봇 명령어를 등록합니다.
-        등록된 명령어는 사용자가 "/" 를 입력하면 자동완성 메뉴로 표시되고,
-        채팅 하단 메뉴 버튼(≡)에서도 확인/선택할 수 있습니다.
         """
         if not self.token:
             print("Cannot set bot commands: TELEGRAM_BOT_TOKEN is empty.")
@@ -226,13 +227,10 @@ class TelegramBot:
     def _handle_message(self, message):
         """
         Processes incoming messages and dispatches commands.
-        단체방 Topics(스레드) 기능을 지원합니다.
         """
         chat_id = message.get("chat", {}).get("id")
         text = message.get("text", "").strip()
         message_id = message.get("message_id")
-        
-        # Topics(스레드)가 활성화된 그룹에서 메시지가 속한 스레드 ID
         message_thread_id = message.get("message_thread_id")
         
         if not chat_id or not text:
@@ -340,8 +338,6 @@ class TelegramBot:
             "이 봇은 등록하신 관심 주식을 주기적으로 모니터링하여 "
             "<b>20일선/60일선/120일선 이탈, 볼린저 밴드 하단 돌파, RSI 과매수/과매도</b> 등 "
             "주요 기술적 이벤트 발생 시 자동으로 알림을 전송해 줍니다.\n\n"
-            "또한, 순수 기술적 지표들을 종합 분석하여 최적의 매수/매도 가격과 "
-            "매매 추천 정보를 언제든지 바로 예측해서 제공합니다.\n\n"
             "<b>ℹ️ 시작하려면 /help 를 입력하여 사용 가능한 명령어 목록을 확인하세요!</b>"
         )
         self.send_message(chat_id, welcome_text, reply_to_message_id=reply_to_message_id, message_thread_id=message_thread_id)
@@ -578,8 +574,6 @@ class TelegramBot:
         current_price = analysis['current_price']
         buy_target = analysis['buy_target']
         sell_target = analysis['sell_target']
-        buy_discount = ((current_price - buy_target) / current_price * 100) if current_price > 0 else 0
-        sell_premium = ((sell_target - current_price) / current_price * 100) if current_price > 0 else 0
         
         report_text = (
             f"<b>📊 [{ticker_safe}] {candle_name} 기술적 분석 리포트</b>\n"
