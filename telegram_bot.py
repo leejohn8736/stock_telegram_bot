@@ -77,10 +77,6 @@ class TelegramBot:
         return None
 
     def send_message(self, chat_id, text, parse_mode="HTML", reply_to_message_id=None, message_thread_id=None, reply_markup=None):
-        """
-        Send message to chat_id.
-        Returns message_id on success, None on failure.
-        """
         payload = {
             "chat_id": chat_id,
             "text": text,
@@ -99,9 +95,6 @@ class TelegramBot:
         return None
 
     def delete_message(self, chat_id, message_id):
-        """
-        Deletes a message by its message_id.
-        """
         payload = {
             "chat_id": chat_id,
             "message_id": message_id
@@ -110,7 +103,6 @@ class TelegramBot:
 
     @contextmanager
     def _loading_message(self, chat_id, text, **reply_options):
-        """Always remove the progress message, including when a handler fails."""
         message_id = self.send_message(chat_id, text, **reply_options)
         try:
             yield
@@ -122,9 +114,6 @@ class TelegramBot:
                     print(f"Error removing loading message: {exc}")
 
     def answer_callback_query(self, callback_query_id, text=None, show_alert=False):
-        """
-        Acknowledges a callback query (인라인 버튼 클릭 시 로딩 표시 제거 및 알림 표시).
-        """
         payload = {"callback_query_id": callback_query_id}
         if text:
             payload["text"] = text
@@ -133,9 +122,6 @@ class TelegramBot:
         return self._api_call("answerCallbackQuery", payload)
 
     def edit_message_text(self, chat_id, message_id, text, parse_mode="HTML", reply_markup=None):
-        """
-        Edits an existing message's text (인라인 키보드 상태 갱신용).
-        """
         payload = {
             "chat_id": chat_id,
             "message_id": message_id,
@@ -147,9 +133,6 @@ class TelegramBot:
         return self._api_call("editMessageText", payload)
 
     def get_updates(self):
-        """
-        Retrieves new messages via Long Polling; returns None on API failure.
-        """
         payload = {"timeout": 20}
         if self.offset is not None:
             payload["offset"] = self.offset
@@ -160,9 +143,6 @@ class TelegramBot:
         return None
 
     def set_my_commands(self):
-        """
-        setMyCommands API를 호출하여 봇 명령어를 등록합니다.
-        """
         if not self.token:
             print("Cannot set bot commands: TELEGRAM_BOT_TOKEN is empty.")
             return None
@@ -175,9 +155,6 @@ class TelegramBot:
         return result
 
     def start_polling(self):
-        """
-        Starts the long polling thread.
-        """
         if self.polling_thread is not None and self.polling_thread.is_alive():
             return
         if not self.token:
@@ -191,17 +168,11 @@ class TelegramBot:
         print("Telegram Bot Polling Thread Started.")
 
     def stop_polling(self):
-        """
-        Stops the long polling thread.
-        """
         self.is_running = False
         self._stop_event.set()
         print("Stopping Telegram Bot Polling...")
 
     def _poll_loop(self):
-        """
-        Infinite polling loop running in the background thread.
-        """
         while self.is_running:
             try:
                 updates = self.get_updates()
@@ -225,9 +196,6 @@ class TelegramBot:
             self._stop_event.wait(0.5)
 
     def _handle_message(self, message):
-        """
-        Processes incoming messages and dispatches commands.
-        """
         chat_id = message.get("chat", {}).get("id")
         text = message.get("text", "").strip()
         message_id = message.get("message_id")
@@ -246,54 +214,22 @@ class TelegramBot:
             self._dispatch_command(chat_id, command, arg, reply_to_message_id=message_id, message_thread_id=message_thread_id)
 
     def _dispatch_command(self, chat_id, command, arg, reply_to_message_id=None, message_thread_id=None):
-        """
-        Routes the command to the appropriate handler.
-        """
         command_map = {
-            "/start": "/start",
-            "/시작": "/start",
-            "/help": "/help",
-            "/도움말": "/help",
-            "/add": "/add",
-            "/추가": "/add",
-            "/a": "/add",
-            "/del": "/del",
-            "/d": "/del",
-            "/삭제": "/del",
-            "/list": "/list",
-            "/목록": "/list",
-            "/l": "/list",
-            "/predict": "/predict",
-            "/예측": "/predict",
-            "/p": "/predict",
-            "/predict_short": "/predict_short",
-            "/단기예측": "/predict_short",
-            "/ps": "/predict_short",
-            "/predict_weekly": "/predict_weekly",
-            "/장기예측": "/predict_weekly",
-            "/pw": "/predict_weekly",
-            "/settopic": "/settopic",
-            "/토픽설정": "/settopic",
-            "/topic": "/settopic",
-            "/indices": "/indices",
-            "/지수": "/indices",
-            "/시장": "/indices",
-            "/i": "/indices",
-            "/korea": "/korea",
-            "/한국": "/korea",
-            "/kr": "/korea",
-            "/alerts": "/alerts",
-            "/알림": "/alerts",
-            "/alert": "/alerts",
-            "/alarms": "/alarms",
-            "/알람": "/alarms",
-            "/알람설정": "/alarms",
-            "/weekly": "/weekly",
-            "/주간": "/weekly",
-            "/주간리포트": "/weekly",
-            "/w": "/weekly",
-            "/calendar": "/calendar",
-            "/일정": "/calendar"
+            "/start": "/start", "/시작": "/start",
+            "/help": "/help", "/도움말": "/help",
+            "/add": "/add", "/추가": "/add", "/a": "/add",
+            "/del": "/del", "/d": "/del", "/삭제": "/del",
+            "/list": "/list", "/목록": "/list", "/l": "/list",
+            "/predict": "/predict", "/예측": "/predict", "/p": "/predict",
+            "/predict_short": "/predict_short", "/단기예측": "/predict_short", "/ps": "/predict_short",
+            "/predict_weekly": "/predict_weekly", "/장기예측": "/predict_weekly", "/pw": "/predict_weekly",
+            "/settopic": "/settopic", "/토픽설정": "/settopic", "/topic": "/settopic",
+            "/indices": "/indices", "/지수": "/indices", "/시장": "/indices", "/i": "/indices",
+            "/korea": "/korea", "/한국": "/korea", "/kr": "/korea",
+            "/alerts": "/alerts", "/알림": "/alerts", "/alert": "/alerts",
+            "/alarms": "/alarms", "/알람": "/alarms", "/알람설정": "/alarms",
+            "/weekly": "/weekly", "/주간": "/weekly", "/주간리포트": "/weekly", "/w": "/weekly",
+            "/calendar": "/calendar", "/일정": "/calendar"
         }
         
         normalized_cmd = command_map.get(command, command)
@@ -349,8 +285,12 @@ class TelegramBot:
             "📌 <b>/del [티커]</b> 또는 <b>/삭제 [티커]</b> - 관심 주식을 삭제합니다.\n"
             "📌 <b>/list</b> 또는 <b>/목록</b> - 내가 구독 중인 주식 리스트와 현재가를 조회합니다.\n"
             "📌 <b>/predict [티커]</b> 또는 <b>/예측 [티커]</b> - 특정 주식의 기술적 지표 분석 및 매매 예측 가격 조회\n"
+            "📌 <b>/predict_short [티커]</b> 또는 <b>/ps [티커]</b> - 5분봉 단기 예측\n"
+            "📌 <b>/predict_weekly [티커]</b> 또는 <b>/pw [티커]</b> - 주봉 장기 예측\n"
             "📌 <b>/indices</b> 또는 <b>/지수</b> - 현재 시장 인덱스 및 공포탐욕지수 조회\n"
             "📌 <b>/korea</b> 또는 <b>/한국</b> - 한국 시장(KOSPI/KOSDAQ) 및 환율 조회\n"
+            "📌 <b>/weekly</b> 또는 <b>/주간</b> - 주간 요약 리포트\n"
+            "📌 <b>/calendar</b> 또는 <b>/일정</b> - 증시 주요 일정\n"
             "📌 <b>/alarms</b> 또는 <b>/알람</b> - 알람 수신 수준 선택\n"
             "📌 <b>/help</b> 또는 <b>/도움말</b> - 도움말 표시"
         )
@@ -358,7 +298,7 @@ class TelegramBot:
 
     def _handle_add(self, chat_id, arg, reply_to_message_id=None, message_thread_id=None):
         if not arg:
-            self.send_message(chat_id, "⚠️ 사용법: <code>/add [티커]</code> 형태로 입력해 주세요.\n예시: <code>/add AAPL</code>",
+            self.send_message(chat_id, "⚠️ 사용법: <code>/add [티커]</code> 형태 입력 (예: <code>/add AAPL</code>)",
                             reply_to_message_id=reply_to_message_id, message_thread_id=message_thread_id)
             return
             
@@ -368,52 +308,39 @@ class TelegramBot:
         
         stock_data = stock_api.fetch_stock_data(ticker)
         if not stock_data:
-            self.send_message(
-                chat_id, 
-                f"❌ <code>{ticker}</code>는 유효하지 않은 티커이거나 데이터를 가져올 수 없습니다.",
-                reply_to_message_id=reply_to_message_id, message_thread_id=message_thread_id
-            )
+            self.send_message(chat_id, f"❌ <code>{ticker}</code>는 유효하지 않은 티커이거나 데이터를 가져올 수 없습니다.",
+                            reply_to_message_id=reply_to_message_id, message_thread_id=message_thread_id)
             return
             
         success = database.add_subscription(chat_id, ticker)
         stock_name = stock_data.get("name", ticker)
         if success:
-            self.send_message(
-                chat_id, 
-                f"✅ <b>{html.escape(stock_name)}</b> (<code>{ticker}</code>)가 성공적으로 등록되었습니다!\n"
-                f"실시간 현재가: <b>{stock_data['current_price']:.2f} {stock_data['currency']}</b>",
-                reply_to_message_id=reply_to_message_id, message_thread_id=message_thread_id
-            )
+            self.send_message(chat_id, f"✅ <b>{html.escape(stock_name)}</b> (<code>{ticker}</code>) 등록 완료!\n현재가: <b>{stock_data['current_price']:.2f} {stock_data['currency']}</b>",
+                            reply_to_message_id=reply_to_message_id, message_thread_id=message_thread_id)
         else:
             self.send_message(chat_id, f"ℹ️ <code>{ticker}</code>는 이미 등록된 관심 주식입니다.",
                             reply_to_message_id=reply_to_message_id, message_thread_id=message_thread_id)
 
     def _handle_del(self, chat_id, arg, reply_to_message_id=None, message_thread_id=None):
         if not arg:
-            self.send_message(chat_id, "⚠️ 사용법: <code>/del [티커]</code> 형태로 입력해 주세요.",
-                            reply_to_message_id=reply_to_message_id, message_thread_id=message_thread_id)
+            self.send_message(chat_id, "⚠️ 사용법: <code>/del [티커]</code>", reply_to_message_id=reply_to_message_id, message_thread_id=message_thread_id)
             return
             
         ticker = arg.upper().strip()
         success = database.remove_subscription(chat_id, ticker)
-        
         if success:
             database.clear_all_signals_for_ticker(chat_id, ticker)
-            self.send_message(chat_id, f"✅ <code>{ticker}</code>가 관심 주식에서 성공적으로 삭제되었습니다.",
-                            reply_to_message_id=reply_to_message_id, message_thread_id=message_thread_id)
+            self.send_message(chat_id, f"✅ <code>{ticker}</code> 삭제 완료.", reply_to_message_id=reply_to_message_id, message_thread_id=message_thread_id)
         else:
-            self.send_message(chat_id, f"⚠️ 등록되지 않은 티커입니다.",
-                            reply_to_message_id=reply_to_message_id, message_thread_id=message_thread_id)
+            self.send_message(chat_id, f"⚠️ 등록되지 않은 티커입니다.", reply_to_message_id=reply_to_message_id, message_thread_id=message_thread_id)
 
     def _handle_list(self, chat_id, reply_to_message_id=None, message_thread_id=None):
         subscriptions = database.get_user_subscriptions(chat_id)
         if not subscriptions:
-            self.send_message(chat_id, "📂 구독 중인 관심 주식이 없습니다.\n<code>/add [티커]</code>로 등록해 보세요!",
-                            reply_to_message_id=reply_to_message_id, message_thread_id=message_thread_id)
+            self.send_message(chat_id, "📂 구독 중인 관심 주식이 없습니다.", reply_to_message_id=reply_to_message_id, message_thread_id=message_thread_id)
             return
             
-        with self._loading_message(chat_id, "🔄 구독 중인 종목들의 현재가를 가져오는 중...",
-                        reply_to_message_id=reply_to_message_id, message_thread_id=message_thread_id):
+        with self._loading_message(chat_id, "🔄 현재가 조회 중...", reply_to_message_id=reply_to_message_id, message_thread_id=message_thread_id):
             kst_offset = 9 * 60 * 60
             now_str = time.strftime("%Y-%m-%d %H:%M:%S", time.gmtime(time.time() + kst_offset))
             lines = [f"<b>📋 나의 관심 주식 리스트</b>\n⏱ 조회시간: <code>{now_str}</code>\n"]
@@ -421,10 +348,7 @@ class TelegramBot:
             price_cache = stock_api.fetch_current_prices_batch(subscriptions) if stock_api.is_toss_enabled() else None
             max_workers = min(8, max(1, len(subscriptions)))
             with ThreadPoolExecutor(max_workers=max_workers) as executor:
-                row_futures = [
-                    executor.submit(self._build_list_row, idx, ticker, price_cache)
-                    for idx, ticker in enumerate(subscriptions, 1)
-                ]
+                row_futures = [executor.submit(self._build_list_row, idx, ticker, price_cache) for idx, ticker in enumerate(subscriptions, 1)]
                 for future in row_futures:
                     lines.append(future.result())
 
@@ -445,21 +369,17 @@ class TelegramBot:
                 rec_str = self._build_recommendation_str(full_data)
 
                 return f"{idx}. <b>{html.escape(stock_name)}</b> (<code>{ticker}</code>): {price:.2f} {currency}{change_str}{rec_str}"
-
             return f"{idx}. <code>{ticker}</code>: 데이터 로드 실패 ⚠️"
-        except Exception as e:
+        except Exception:
             return f"{idx}. <code>{ticker}</code>: 데이터 로드 실패 ⚠️"
 
     @staticmethod
     def _build_change_str(price, prev_close):
         if prev_close is not None and prev_close > 0:
             pct_change = ((price - prev_close) / prev_close) * 100
-            if abs(pct_change) < 0.01:
-                return " (보합)"
-            elif pct_change > 0:
-                return f" (📈 <b>+{pct_change:.2f}%</b>)"
-            else:
-                return f" (📉 <b>{pct_change:.2f}%</b>)"
+            if abs(pct_change) < 0.01: return " (보합)"
+            elif pct_change > 0: return f" (📈 <b>+{pct_change:.2f}%</b>)"
+            else: return f" (📉 <b>{pct_change:.2f}%</b>)"
         return ""
 
     @staticmethod
@@ -469,16 +389,11 @@ class TelegramBot:
             if "error" not in analysis:
                 rec = analysis["recommendation"]
                 conf = analysis["confidence"]
-                if "STRONG BUY" in rec:
-                    return f" 🟢🔥 <b>{rec}</b> ({conf}%)"
-                elif "BUY" in rec:
-                    return f" 🟢 <b>{rec}</b> ({conf}%)"
-                elif "STRONG SELL" in rec:
-                    return f" 🔴🔥 <b>{rec}</b> ({conf}%)"
-                elif "SELL" in rec:
-                    return f" 🔴 <b>{rec}</b> ({conf}%)"
-                else:
-                    return f" 🟡 <b>{rec}</b> ({conf}%)"
+                if "STRONG BUY" in rec: return f" 🟢🔥 <b>{rec}</b> ({conf}%)"
+                elif "BUY" in rec: return f" 🟢 <b>{rec}</b> ({conf}%)"
+                elif "STRONG SELL" in rec: return f" 🔴🔥 <b>{rec}</b> ({conf}%)"
+                elif "SELL" in rec: return f" 🔴 <b>{rec}</b> ({conf}%)"
+                else: return f" 🟡 <b>{rec}</b> ({conf}%)"
         except Exception:
             pass
         return ""
@@ -487,71 +402,56 @@ class TelegramBot:
         if not arg:
             self.send_message(chat_id, "⚠️ 사용법: <code>/predict [티커]</code>", reply_to_message_id=reply_to_message_id, message_thread_id=message_thread_id)
             return
-            
         ticker = arg.upper().strip()
         with self._loading_message(chat_id, f"📊 <code>{html.escape(ticker)}</code> 분석 중...", reply_to_message_id=reply_to_message_id, message_thread_id=message_thread_id):
             stock_data = stock_api.fetch_stock_data(ticker)
             if not stock_data:
-                self.send_message(chat_id, f"❌ 데이터를 가져오지 못했습니다.", reply_to_message_id=reply_to_message_id, message_thread_id=message_thread_id)
+                self.send_message(chat_id, "❌ 데이터를 가져오지 못했습니다.", reply_to_message_id=reply_to_message_id, message_thread_id=message_thread_id)
                 return
-
             analysis = predictor.predict_buy_sell_prices(stock_data)
             if "error" in analysis:
                 self.send_message(chat_id, f"⚠️ 분석 실패: {html.escape(analysis['error'])}", reply_to_message_id=reply_to_message_id, message_thread_id=message_thread_id)
                 return
-
-            report_text = self._format_prediction_report(analysis, uses_short_term=False)
-            self.send_message(chat_id, report_text, reply_to_message_id=reply_to_message_id, message_thread_id=message_thread_id)
+            self.send_message(chat_id, self._format_prediction_report(analysis, uses_short_term=False), reply_to_message_id=reply_to_message_id, message_thread_id=message_thread_id)
 
     def _handle_predict_short(self, chat_id, arg, reply_to_message_id=None, message_thread_id=None):
         if not arg:
             self.send_message(chat_id, "⚠️ 사용법: <code>/predict_short [티커]</code>", reply_to_message_id=reply_to_message_id, message_thread_id=message_thread_id)
             return
-            
         ticker = arg.upper().strip()
         with self._loading_message(chat_id, f"📊 <code>{html.escape(ticker)}</code> 단기 분석 중...", reply_to_message_id=reply_to_message_id, message_thread_id=message_thread_id):
             stock_data = stock_api.fetch_stock_data_intraday(ticker, interval="5m", range_str="5d") or stock_api.fetch_stock_data_intraday(ticker, interval="15m", range_str="5d")
             if not stock_data:
-                self.send_message(chat_id, f"❌ 단기 데이터를 가져오지 못했습니다.", reply_to_message_id=reply_to_message_id, message_thread_id=message_thread_id)
+                self.send_message(chat_id, "❌ 단기 데이터를 가져오지 못했습니다.", reply_to_message_id=reply_to_message_id, message_thread_id=message_thread_id)
                 return
-
             analysis = predictor.predict_buy_sell_prices(stock_data)
             if "error" in analysis:
                 self.send_message(chat_id, f"⚠️ 분석 실패: {html.escape(analysis['error'])}", reply_to_message_id=reply_to_message_id, message_thread_id=message_thread_id)
                 return
-
-            report_text = self._format_prediction_report(analysis, uses_short_term=True)
-            self.send_message(chat_id, report_text, reply_to_message_id=reply_to_message_id, message_thread_id=message_thread_id)
+            self.send_message(chat_id, self._format_prediction_report(analysis, uses_short_term=True), reply_to_message_id=reply_to_message_id, message_thread_id=message_thread_id)
 
     def _handle_predict_weekly(self, chat_id, arg, reply_to_message_id=None, message_thread_id=None):
         if not arg:
             self.send_message(chat_id, "⚠️ 사용법: <code>/predict_weekly [티커]</code>", reply_to_message_id=reply_to_message_id, message_thread_id=message_thread_id)
             return
-            
         ticker = arg.upper().strip()
         with self._loading_message(chat_id, f"📊 <code>{html.escape(ticker)}</code> 장기 분석 중...", reply_to_message_id=reply_to_message_id, message_thread_id=message_thread_id):
             stock_data = stock_api.fetch_stock_data_weekly(ticker)
             if not stock_data:
-                self.send_message(chat_id, f"❌ 주봉 데이터를 가져오지 못했습니다.", reply_to_message_id=reply_to_message_id, message_thread_id=message_thread_id)
+                self.send_message(chat_id, "❌ 주봉 데이터를 가져오지 못했습니다.", reply_to_message_id=reply_to_message_id, message_thread_id=message_thread_id)
                 return
-
             analysis = predictor.predict_buy_sell_prices(stock_data)
             if "error" in analysis:
                 self.send_message(chat_id, f"⚠️ 분석 실패: {html.escape(analysis['error'])}", reply_to_message_id=reply_to_message_id, message_thread_id=message_thread_id)
                 return
-
-            report_text = self._format_prediction_report(analysis, uses_short_term=False)
-            self.send_message(chat_id, report_text, reply_to_message_id=reply_to_message_id, message_thread_id=message_thread_id)
+            self.send_message(chat_id, self._format_prediction_report(analysis, uses_short_term=False), reply_to_message_id=reply_to_message_id, message_thread_id=message_thread_id)
 
     def _format_prediction_report(self, analysis, uses_short_term=False):
         currency = html.escape(str(analysis["currency"]))
         rec = analysis["recommendation"]
         ticker_safe = html.escape(str(analysis["ticker"]))
+        candle_name = analysis.get("candle_name", "5분봉" if uses_short_term else "주봉")
         
-        candle_name = analysis.get("candle_name", "")
-        if not candle_name:
-            candle_name = "5분봉" if uses_short_term else "주봉"
-            
         emoji = "⚪"
         if "STRONG BUY" in rec: emoji = "🟢🔥"
         elif "BUY" in rec: emoji = "🟢"
@@ -559,10 +459,8 @@ class TelegramBot:
         elif "SELL" in rec: emoji = "🔴"
         else: emoji = "🟡"
             
-        indicators = analysis["indicators"]
         signals = analysis.get("signals", [])
         score = analysis.get("score", 0)
-        
         score_interpretation = "중립 (점수: {:.1f})".format(score)
         if score >= 4.0: score_interpretation = "매우 강한 매수 신호 (점수: +{:.1f})".format(score)
         elif score >= 2.0: score_interpretation = "강한 매수 신호 (점수: +{:.1f})".format(score)
@@ -587,73 +485,58 @@ class TelegramBot:
             f"━━━━━━━━━━━━━━━━━━━\n"
             f"<b>🔍 판단 근거</b>\n"
         )
-        
         if signals:
             for i, signal in enumerate(signals[:5], 1):
                 report_text += f"{i}. {html.escape(signal)}\n"
         else:
             report_text += "분석된 신호가 없습니다.\n"
-            
         return report_text
 
     def _handle_indices(self, chat_id, reply_to_message_id=None, message_thread_id=None):
-        loading_msg_id = self.send_message(
-            chat_id, "📊 시장 인덱스 데이터를 가져오는 중...",
-            reply_to_message_id=reply_to_message_id, message_thread_id=message_thread_id
-        )
+        loading_id = self.send_message(chat_id, "📊 시장 인덱스 데이터 조회 중...", reply_to_message_id=reply_to_message_id, message_thread_id=message_thread_id)
         try:
             data = market_indices.fetch_all_indices()
             report_text = market_indices.format_indices_report(data)
-            extreme_alerts = market_indices.check_extreme_conditions(data)
-            if extreme_alerts:
+            extreme = market_indices.check_extreme_conditions(data)
+            if extreme:
                 report_text += "\n\n<b>⚠️ 극단 조건 경고</b>\n"
-                for alert_type, message in extreme_alerts:
-                    report_text += f"• {message}\n"
+                for _, msg in extreme: report_text += f"• {msg}\n"
             self.send_message(chat_id, report_text, reply_to_message_id=reply_to_message_id, message_thread_id=message_thread_id)
         except Exception as e:
-            self.send_message(chat_id, f"⚠️ 시장 인덱스 데이터 조회 실패: {str(e)}", reply_to_message_id=reply_to_message_id, message_thread_id=message_thread_id)
-        
-        if loading_msg_id:
-            try: self.delete_message(chat_id, loading_msg_id)
+            self.send_message(chat_id, f"⚠️ 조회 실패: {str(e)}", reply_to_message_id=reply_to_message_id, message_thread_id=message_thread_id)
+        if loading_id:
+            try: self.delete_message(chat_id, loading_id)
             except Exception: pass
 
     def _handle_korea(self, chat_id, reply_to_message_id=None, message_thread_id=None):
-        loading_msg_id = self.send_message(
-            chat_id, "🇰🇷 한국 시장 데이터를 가져오는 중...",
-            reply_to_message_id=reply_to_message_id, message_thread_id=message_thread_id
-        )
+        loading_id = self.send_message(chat_id, "🇰🇷 한국 시장 데이터 조회 중...", reply_to_message_id=reply_to_message_id, message_thread_id=message_thread_id)
         try:
             data = market_indices.fetch_korea_market_close_data()
             report_text = market_indices.format_korea_market_close_report(data)
             self.send_message(chat_id, report_text, reply_to_message_id=reply_to_message_id, message_thread_id=message_thread_id)
         except Exception as e:
-            self.send_message(chat_id, f"⚠️ 한국 시장 데이터 조회 실패: {str(e)}", reply_to_message_id=reply_to_message_id, message_thread_id=message_thread_id)
-        
-        if loading_msg_id:
-            try: self.delete_message(chat_id, loading_msg_id)
+            self.send_message(chat_id, f"⚠️ 조회 실패: {str(e)}", reply_to_message_id=reply_to_message_id, message_thread_id=message_thread_id)
+        if loading_id:
+            try: self.delete_message(chat_id, loading_id)
             except Exception: pass
 
     def _handle_calendar(self, chat_id, reply_to_message_id=None, message_thread_id=None):
         try:
             report = market_events.format_weekly_events(market_events.fetch_weekly_events())
-        except Exception as exc:
+        except Exception:
             report = "⚠️ 주식 일정을 불러오지 못했습니다."
         self.send_message(chat_id, report, reply_to_message_id=reply_to_message_id, message_thread_id=message_thread_id)
 
     def _handle_weekly(self, chat_id, reply_to_message_id=None, message_thread_id=None):
-        loading_msg_id = self.send_message(
-            chat_id, "📊 주간 시장 요약 데이터를 수집하는 중...",
-            reply_to_message_id=reply_to_message_id, message_thread_id=message_thread_id
-        )
+        loading_id = self.send_message(chat_id, "📊 주간 리포트 데이터 수집 중...", reply_to_message_id=reply_to_message_id, message_thread_id=message_thread_id)
         try:
             data = weekly_report.fetch_weekly_report_data()
             report_text = weekly_report.format_weekly_report(data)
             self.send_message(chat_id, report_text, reply_to_message_id=reply_to_message_id, message_thread_id=message_thread_id)
         except Exception as e:
             self.send_message(chat_id, f"⚠️ 주간 리포트 생성 실패: {str(e)}", reply_to_message_id=reply_to_message_id, message_thread_id=message_thread_id)
-        
-        if loading_msg_id:
-            try: self.delete_message(chat_id, loading_msg_id)
+        if loading_id:
+            try: self.delete_message(chat_id, loading_id)
             except Exception: pass
 
     def _handle_settopic(self, chat_id, arg, reply_to_message_id=None, message_thread_id=None):
@@ -718,7 +601,6 @@ class TelegramBot:
         try:
             if not data.startswith("alarm:") or not chat_id:
                 return
-
             level = data.split(":", 1)[1].strip().upper()
             if level not in database.ALERT_LEVELS:
                 self.answer_callback_query(query_id, text="⚠️ 알 수 없는 설정입니다.")
@@ -731,7 +613,7 @@ class TelegramBot:
             if message_id:
                 new_text = self._build_alarm_settings_text() + f"━━━━━━━━━━━━━━━━━━━\n<b>현재 설정:</b> {level_label}"
                 self.edit_message_text(chat_id, message_id, new_text, reply_markup=self._build_alarm_keyboard(chat_id, level))
-        except Exception as e:
+        except Exception:
             if query_id:
                 try: self.answer_callback_query(query_id, text="⚠️ 설정 변경 실패")
                 except Exception: pass
@@ -743,7 +625,7 @@ class TelegramBot:
             state_text = "켜짐 ✅" if enabled else "꺼짐 🔕"
             level = database.get_chat_alert_level(chat_id)
             level_label = database.ALERT_LEVEL_LABELS.get(level, level)
-            self.send_message(chat_id, f"🔔 자동 알림 상태: <b>{state_text}</b>\n수신 수준: {level_label}", reply_to_message_id=reply_to_message_id, message_thread_id=message_thread_id)
+            self.send_message(chat_id, f"🔔 알림 상태: <b>{state_text}</b>\n수신 수준: {level_label}", reply_to_message_id=reply_to_message_id, message_thread_id=message_thread_id)
             return
 
         if arg_lower in ("off", "끄기", "disable", "false", "0"):
@@ -759,7 +641,6 @@ class TelegramBot:
         self.send_message(chat_id, "⚠️ 사용법: <code>/alerts on</code> 또는 <code>/alerts off</code>", reply_to_message_id=reply_to_message_id, message_thread_id=message_thread_id)
 
 if __name__ == "__main__":
-    # Local dry run
     bot = TelegramBot()
     bot.start_polling()
     time.sleep(2)
