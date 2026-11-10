@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import time
 import sys
 import os
@@ -5,7 +7,7 @@ import threading
 import requests
 from http.server import HTTPServer, BaseHTTPRequestHandler
 import database
-from config import TELEGRAM_BOT_TOKEN, DB_PATH, CHECK_INTERVAL
+from config import TELEGRAM_BOT_TOKEN, CHECK_INTERVAL
 from telegram_bot import TelegramBot
 from scheduler import AlertScheduler
 import toss_api
@@ -69,11 +71,9 @@ def main():
     print("🚀 Initializing Telegram Stock Alert Bot...")
 
     # 0. Render 포트 바인딩용 웹 서버를 가장 먼저 구동
-    #    (토큰 오류가 있어도 포트는 열려 있어야 로그를 확인할 수 있음)
     threading.Thread(target=run_web_server, daemon=True).start()
 
     if not check_environment():
-        # 바로 종료하면 Render가 재시작을 반복하므로, 로그 확인용으로 대기
         print("⏸️ 환경변수를 수정한 뒤 재배포하세요. (프로세스는 대기 상태입니다)")
         while True:
             time.sleep(60)
@@ -91,8 +91,8 @@ def main():
     except Exception as e:
         print(f"⚠️ Data Source check failed (Yahoo Finance 사용): {e}")
 
-    # 데이터베이스 초기화
-    print(f"📂 Initializing database at '{DB_PATH}'...")
+    # 데이터베이스(Supabase) 초기화
+    print("📂 Initializing Supabase database connection...")
     try:
         database.init_db()
         print("✅ Database initialized successfully.")
@@ -118,7 +118,7 @@ def main():
 
     print("\n" + "="*50)
     print("🎉 STOCK ALERT BOT IS NOW RUNNING SUCCESSFULLY!")
-    print(f"- DB Path: {DB_PATH}")
+    print(f"- Database: Supabase PostgreSQL")
     print(f"- Scan Interval: {CHECK_INTERVAL} seconds")
     print("="*50 + "\n")
 
