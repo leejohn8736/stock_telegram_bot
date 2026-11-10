@@ -3,3 +3,4 @@ beautifulsoup4
 curl_cffi
 google-genai
 python-telegram-bot
+supabase
