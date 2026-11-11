@@ -343,6 +343,66 @@ def record_daily_alert(chat_id, ticker, alert_date, threshold_pct, direction):
     return _log_record(chat_id, ticker, "daily", alert_date, _daily_key(threshold_pct, direction))
 
 
+# --- 최고가 돌파 알림 (종목: ALL_TIME_HIGH / WEEK52_HIGH, 지수: ticker="INDEX", type="ALL") ---
+def has_sent_high_breakout_alert(chat_id, ticker, breakout_type, alert_date):
+    return _log_exists(chat_id, ticker, "high_breakout", alert_date, str(breakout_type))
+
+
+def record_high_breakout_alert(chat_id, ticker, breakout_type, alert_date, price=None):
+    return _log_record(chat_id, ticker, "high_breakout", alert_date, str(breakout_type), price)
+
+
+# --- 시장 전체 알림 (미국장 마감, 한국장 마감, 극단 조건): 재시작해도 중복 전송되지 않도록 DB에 기록 ---
+def has_sent_market_alert(chat_id, alert_key, alert_date):
+    return _log_exists(chat_id, "", "market", alert_date, str(alert_key))
+
+
+def record_market_alert(chat_id, alert_key, alert_date):
+    return _log_record(chat_id, "", "market", alert_date, str(alert_key))
+
+
+# --- 전송 실패 시 기록 되돌리기 (기록을 먼저 남기고 전송하는 방식이라, 실패하면 재시도 가능하게 해제) ---
+def _log_release(chat_id, ticker, kind, alert_date, alert_key) -> bool:
+    if not supabase:
+        return False
+    try:
+        (supabase.table("alert_log").delete()
+         .eq("chat_id", chat_id).eq("ticker", ticker).eq("kind", kind)
+         .eq("alert_date", str(alert_date)).eq("alert_key", alert_key).execute())
+        return True
+    except Exception as e:
+        print(f"[Supabase Error] _log_release({kind}): {e}")
+        return False
+
+
+def release_signal_alert(chat_id, ticker, signal_type, alert_date):
+    return _log_release(chat_id, ticker, "signal", alert_date, str(signal_type))
+
+
+def release_recommendation_alert(chat_id, ticker, alert_date, alert_type):
+    return _log_release(chat_id, ticker, "recommendation", alert_date, str(alert_type))
+
+
+def release_high_breakout_alert(chat_id, ticker, breakout_type, alert_date):
+    return _log_release(chat_id, ticker, "high_breakout", alert_date, str(breakout_type))
+
+
+def release_market_alert(chat_id, alert_key, alert_date):
+    return _log_release(chat_id, "", "market", alert_date, str(alert_key))
+
+
+def release_daily_alert(chat_id, ticker, alert_date, threshold_pct, direction):
+    return _log_release(chat_id, ticker, "daily", alert_date, _daily_key(threshold_pct, direction))
+
+
+def release_weekly_events_send(chat_id, week_start):
+    return _log_release(chat_id, "", "weekly_events", week_start, "-")
+
+
+def release_weekly_report_send(chat_id, week_start):
+    return _log_release(chat_id, "", "weekly_report", week_start, "-")
+
+
 # --- 주간 일정 / 주간 리포트 (chat 단위, ticker 는 빈 문자열) ---
 def has_sent_weekly_events(chat_id, week_start):
     return _log_exists(chat_id, "", "weekly_events", week_start, "-")
